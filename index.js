@@ -54,9 +54,13 @@ const sendMail = require("./utils/emailService");
     );
 
     if (mailBody.success) {
-      await sendMail(`Transtar VTL ${data["lastUpdated"]}`, mailBody.data);
+      await sendMail(
+        `Transtar VTL ${data["lastUpdated"]}`,
+        mailBody.data,
+        data["lastUpdated"]
+      );
     } else {
-      console.log(mailBody.data);
+      console.log(data["lastUpdated"], mailBody.data);
     }
   } catch (err) {
     console.error(err);
