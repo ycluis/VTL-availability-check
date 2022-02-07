@@ -6,6 +6,7 @@ const { parse } = require("node-html-parser");
 const seatCheck = require("./utils/availabilityCheck");
 const convertToHTML = require("./utils/formatMailBody");
 const sendMail = require("./utils/emailService");
+const sendSMS = require("./utils/smsService");
 
 (async () => {
   try {
@@ -59,6 +60,8 @@ const sendMail = require("./utils/emailService");
         mailBody.data,
         data["lastUpdated"]
       );
+
+      await sendSMS(`Transtar VTL ${data["lastUpdated"]}: Seat available`);
     } else {
       console.log(data["lastUpdated"], mailBody.data);
     }
