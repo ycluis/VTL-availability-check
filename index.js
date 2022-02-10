@@ -16,7 +16,12 @@ const sendSMS = require("./utils/smsService");
     let departureOption1 = "";
     let departureOption2 = "";
 
-    const response = await axios.get(process.env.TRANSTAR_URL);
+    const response = await axios.get(process.env.TRANSTAR_URL, {
+      headers: {
+        "User-Agent":
+          "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
+      },
+    });
     const root = parse(response.data);
 
     const lastUpdated = root.querySelector("h4");
@@ -67,5 +72,6 @@ const sendSMS = require("./utils/smsService");
     }
   } catch (err) {
     console.error(err);
+    process.exit(1);
   }
 })();
