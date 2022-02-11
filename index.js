@@ -1,5 +1,6 @@
 // load .env
-require("dotenv").config();
+const dotenv = require("dotenv");
+dotenv.config({ path: __dirname + "/.env" });
 
 const axios = require("axios");
 const { parse } = require("node-html-parser");
