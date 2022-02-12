@@ -33,7 +33,7 @@ const checkIfLogExist = require("./utils/fileExistenceCheck");
     });
     const root = parse(response.data);
 
-    const lastUpdated = root.querySelector("h6");
+    const lastUpdated = root.querySelector("h4");
     const items = root.querySelectorAll("tr");
 
     items.forEach((item, index) => {
