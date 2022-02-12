@@ -33,7 +33,7 @@ const checkIfLogExist = require("./utils/fileExistenceCheck");
     });
     const root = parse(response.data);
 
-    const lastUpdated = root.querySelector("h4");
+    const lastUpdated = root.querySelector("h6");
     const items = root.querySelectorAll("tr");
 
     items.forEach((item, index) => {
@@ -72,7 +72,8 @@ const checkIfLogExist = require("./utils/fileExistenceCheck");
       await sendMail(
         `Transtar VTL ${data["lastUpdated"]}`,
         mailBody.data,
-        data["lastUpdated"]
+        data["lastUpdated"],
+        false
       );
 
       await sendSMS(`Transtar VTL ${data["lastUpdated"]}: Seat available`);
@@ -81,7 +82,16 @@ const checkIfLogExist = require("./utils/fileExistenceCheck");
     }
   } catch (err) {
     console.error(err);
-    await writeFile(path.join(__dirname, "/", "error.log"), String(err));
+    await writeFile(
+      path.join(__dirname, "/", process.env.ERROR_LOG),
+      String(err)
+    );
+    await sendMail(
+      "VTL Check Error Log",
+      "Check attachment for error log",
+      null,
+      true
+    );
     process.exit(1);
   }
 })();
