@@ -2,12 +2,15 @@
 const dotenv = require("dotenv");
 dotenv.config({ path: __dirname + "/.env" });
 
+const { writeFile } = require("fs/promises");
+const path = require("path");
 const axios = require("axios");
 const { parse } = require("node-html-parser");
 const seatCheck = require("./utils/availabilityCheck");
 const convertToHTML = require("./utils/formatMailBody");
 const sendMail = require("./utils/emailService");
 const sendSMS = require("./utils/smsService");
+const checkIfLogExist = require("./utils/fileExistenceCheck");
 
 (async () => {
   try {
@@ -16,6 +19,11 @@ const sendSMS = require("./utils/smsService");
     const myToSgDateList = [];
     let departureOption1 = "";
     let departureOption2 = "";
+
+    if (await checkIfLogExist("../", process.env.ERROR_LOG)) {
+      console.log("Error found, exit here");
+      return;
+    }
 
     const response = await axios.get(process.env.TRANSTAR_URL, {
       headers: {
@@ -73,6 +81,7 @@ const sendSMS = require("./utils/smsService");
     }
   } catch (err) {
     console.error(err);
+    await writeFile(path.join(__dirname, "/", "error.log"), String(err));
     process.exit(1);
   }
 })();
