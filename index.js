@@ -4,81 +4,102 @@ dotenv.config({ path: __dirname + "/.env" });
 
 const { writeFile } = require("fs/promises");
 const path = require("path");
-const axios = require("axios");
-const { parse } = require("node-html-parser");
 const seatCheck = require("./utils/availabilityCheck");
 const convertToHTML = require("./utils/formatMailBody");
 const sendMail = require("./utils/emailService");
 const sendSMS = require("./utils/smsService");
 const checkIfLogExist = require("./utils/fileExistenceCheck");
+const puppeteer = require("puppeteer");
 
 (async () => {
   try {
-    const data = {};
-    const sgToMyDateList = [];
-    const myToSgDateList = [];
-    let departureOption1 = "";
-    let departureOption2 = "";
-
     if (await checkIfLogExist("../", process.env.ERROR_LOG)) {
       console.log("Error found, exit here");
       return;
     }
 
-    const response = await axios.get(process.env.TRANSTAR_URL, {
-      headers: {
-        "User-Agent":
-          "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
-      },
-    });
-    const root = parse(response.data);
-
-    const lastUpdated = root.querySelector("h4");
-    const items = root.querySelectorAll("tr");
-
-    items.forEach((item, index) => {
-      if (index === 0) {
-        departureOption1 = item.childNodes[1].childNodes[0]._rawText;
-        departureOption2 = item.childNodes[2].childNodes[0]._rawText;
-        data["lastUpdated"] = lastUpdated.structuredText;
-      }
-
-      if (index !== 0) {
-        sgToMyDateList.push({
-          [item.firstChild.childNodes[0]._rawText]:
-            item.childNodes[1].childNodes[0]._rawText,
-        });
-        myToSgDateList.push({
-          [item.firstChild.childNodes[0]._rawText]:
-            item.childNodes[2].childNodes[0]._rawText,
-        });
-      }
+    const browser = await puppeteer.launch({
+      args: [
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
+      ],
     });
 
-    data[departureOption1] = sgToMyDateList;
-    data[departureOption2] = myToSgDateList;
+    const [page] = await browser.pages();
 
-    const sgToMySeatCheck = seatCheck(departureOption1, data[departureOption1]);
-    const myToSgSeatCheck = seatCheck(departureOption2, data[departureOption2]);
+    await page.goto(process.env.TRANSTAR_URL, { waitUntil: "networkidle0" });
+
+    const pageData = await page.evaluate(() => {
+      const data = {};
+      const sgToMyDateList = [];
+      const myToSgDateList = [];
+      let departureFromSg = "";
+      let departureFromMy = "";
+      let lastUpdateAt = "";
+
+      const lastUpdated = document.querySelector("h4");
+      const items = document.querySelectorAll("tr");
+
+      items.forEach((item, index) => {
+        if (index === 0) {
+          departureFromSg = item.querySelectorAll("th")[1].innerText;
+          departureFromMy = item.querySelectorAll("th")[2].innerText;
+          lastUpdateAt = lastUpdated.innerText;
+        }
+
+        if (index !== 0) {
+          sgToMyDateList.push({
+            [item.querySelectorAll("td")[0].innerText]:
+              item.querySelectorAll("td")[1].innerText,
+          });
+
+          myToSgDateList.push({
+            [item.querySelectorAll("td")[0].innerText]:
+              item.querySelectorAll("td")[2].innerText,
+          });
+        }
+      });
+
+      data[departureFromSg] = sgToMyDateList;
+      data[departureFromMy] = myToSgDateList;
+      data["lastUpdateAt"] = lastUpdateAt;
+
+      return {
+        departureFromSg,
+        departureFromMy,
+        data,
+      };
+    });
+    await browser.close();
+
+    const sgToMySeatCheck = seatCheck(
+      pageData["departureFromSg"],
+      pageData["data"][pageData["departureFromSg"]]
+    );
+    const myToSgSeatCheck = seatCheck(
+      pageData["departureFromMy"],
+      pageData["data"][pageData["departureFromMy"]]
+    );
 
     const mailBody = convertToHTML(
       sgToMySeatCheck,
       myToSgSeatCheck,
-      departureOption1,
-      departureOption2
+      pageData["departureFromSg"],
+      pageData["departureFromMy"]
     );
 
     if (mailBody.success) {
       await sendMail(
-        `Transtar VTL ${data["lastUpdated"]}`,
+        `Transtar VTL ${pageData["data"]["lastUpdateAt"]}`,
         mailBody.data,
-        data["lastUpdated"],
+        pageData["data"]["lastUpdateAt"],
         false
       );
 
-      await sendSMS(`Transtar VTL ${data["lastUpdated"]}: Seat available`);
+      await sendSMS(
+        `Transtar VTL ${pageData["data"]["lastUpdateAt"]}: Seat available`
+      );
     } else {
-      console.log(data["lastUpdated"], mailBody.data);
+      console.log(pageData["data"]["lastUpdateAt"], mailBody.data);
     }
   } catch (err) {
     console.error(err);
