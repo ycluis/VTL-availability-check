@@ -28,6 +28,8 @@ const puppeteer = require("puppeteer");
 
     await page.goto(process.env.TRANSTAR_URL, { waitUntil: "networkidle0" });
 
+    // await page.screenshot({ path: "transtar_home_page.png" });
+
     const pageData = await page.evaluate(() => {
       const data = {};
       const sgToMyDateList = [];
