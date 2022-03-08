@@ -9,7 +9,9 @@ const convertToHTML = require("./utils/formatMailBody");
 const sendMail = require("./utils/emailService");
 const sendSMS = require("./utils/smsService");
 const checkIfLogExist = require("./utils/fileExistenceCheck");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
 
 (async () => {
   try {
@@ -17,6 +19,9 @@ const puppeteer = require("puppeteer");
       console.log("Error found, exit here");
       return;
     }
+
+    puppeteer.use(StealthPlugin());
+    puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
 
     const browser = await puppeteer.launch({
       args: [
@@ -27,6 +32,8 @@ const puppeteer = require("puppeteer");
     const [page] = await browser.pages();
 
     await page.goto(process.env.TRANSTAR_URL, { waitUntil: "networkidle0" });
+
+    await page.waitForTimeout(3000);
 
     // await page.screenshot({ path: "transtar_home_page.png" });
 
