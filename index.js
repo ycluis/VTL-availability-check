@@ -33,7 +33,7 @@ const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
 
     await page.goto(process.env.TRANSTAR_URL, { waitUntil: "networkidle0" });
 
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(8000);
 
     // await page.screenshot({ path: "transtar_home_page.png" });
 
@@ -79,6 +79,20 @@ const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
       };
     });
     await browser.close();
+
+    if (pageData["data"]["lastUpdateAt"] === "") {
+      await writeFile(
+        path.join(__dirname, "/", process.env.ERROR_LOG),
+        "Website selector error"
+      );
+      await sendMail(
+        "VTL Check Error Log",
+        "Check attachment for error log",
+        null,
+        true
+      );
+      process.exit(1);
+    }
 
     const sgToMySeatCheck = seatCheck(
       pageData["departureFromSg"],
