@@ -23,17 +23,28 @@ const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
     puppeteer.use(StealthPlugin());
     puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
 
+    const args = [
+      "--headless",
+      "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
+    ];
+
+    if (process.env.PROXY === "true") {
+      args.push("--proxy-server=localhost:3128");
+    }
+
     const browser = await puppeteer.launch({
-      args: [
-        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
-      ],
+      ignoreHTTPSErrors: true,
+      headless: false,
+      args,
     });
 
-    const [page] = await browser.pages();
+    const page = await browser.newPage({ ignoreHTTPSErrors: true });
 
     await page.goto(process.env.TRANSTAR_URL, { waitUntil: "networkidle0" });
 
-    await page.waitForTimeout(8000);
+    await page.waitForSelector("table");
+
+    // await page.waitForTimeout(8000);
 
     // await page.screenshot({ path: "transtar_home_page.png" });
 
