@@ -1,0 +1,34 @@
+{
+    "env": {
+        "commonjs": true,
+        "es2021": true,
+        "node": true
+    },
+    "extends": [
+        "standard",
+        "plugin:prettier/recommended"
+    ],
+    "overrides": [],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "plugins": [
+        "json-format"
+    ],
+    "rules": {
+        "camelcase": "off",
+        "no-prototype-builtins": "off",
+        "prettier/prettier": [
+            "error",
+            {
+                "trailingComma": "all",
+                "tabWidth": 2,
+                "semi": false,
+                "singleQuote": true,
+                "bracketSpacing": true,
+                "printWidth": 120,
+                "endOfLine": "auto"
+            }
+        ]
+    }
+}
