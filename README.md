@@ -8,13 +8,17 @@ This repository is no longer actively maintained or updated. The code is left he
 This is a web scraper built with NodeJS and Puppeteer that scrapes the Transtar website for VTL bus ticket availability. It automates the process of checking for available tickets and provides the user with real-time updates on ticket availability.
 
 ## What is VTL?
-The Vaccinated Travel Lane (VTL) between Singapore and Malaysia was first announced in October 2021 as part of efforts to facilitate cross-border travel for fully vaccinated individuals during the COVID-19 pandemic. The VTL scheme allows eligible travellers to enter each country without the need for quarantine. [Read More](https://www.pmo.gov.sg/Newsroom/Singapore-and-Malaysia-to-launch-VTL-Land-Nov-2021)
+The Vaccinated Travel Lane (VTL) between Singapore and Malaysia was first announced in October 2021 as part of efforts to facilitate cross-border travel for fully vaccinated individuals during the COVID-19 pandemic. The VTL scheme allows eligible travellers to enter each country without the need for quarantine. [Read More](https://www.pmo.gov.sg/Newsroom/Singapore-and-Malaysia-to-launch-VTL-Land-Nov-2021).
 
 ## Features
 - Scrapes Transtar website for VTL ticket availability
 - Provides real-time updates on ticket availability
 - Automates the process of checking for available tickets
 - Sends email/sms notifications when new tickets become available
+
+## Example
+<img src="https://raw.githubusercontent.com/ycluis/VTL-availability-check/main/sample/email_sample.png"  width="50%" height="30%">
+<img src="https://raw.githubusercontent.com/ycluis/VTL-availability-check/main/sample/sms_sample.jpeg"  width="50%" height="30%">
 
 ## Usage
 1. Install NodeJS on your system
